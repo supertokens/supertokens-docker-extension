@@ -71,6 +71,11 @@ export function App() {
           }];
           setEnvVars(newEnvVars)
         }} />}
+      <br /><br />
+      {dbSelected && <ShowDockerRunCommand
+        dbSelected={dbSelected}
+        connectionUri={connectionUri}
+        envVars={envVars} />}
       {/* <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
         Pressing the below button will trigger a request to the backend. Its
         response will appear in the textarea.
@@ -92,4 +97,46 @@ export function App() {
       </Stack> */}
     </>
   );
+}
+
+function ShowDockerRunCommand(props: {
+  dbSelected: "postgresql" | "mysql",
+  connectionUri: string,
+  envVars: { key: string, value: string }[]
+}) {
+  let result = "docker run -p 3567:3567 \\";
+
+  props.envVars.forEach(obj => {
+    if (obj.key === "" || obj.value === "") {
+      return;
+    }
+    result += "\n-e " + obj.key + "=" + obj.value + " \\"
+  })
+
+  if (props.dbSelected === "mysql") {
+    if (props.connectionUri !== "") {
+      result += "\n-e MYSQL_CONNECTION_URI=\"" + props.connectionUri + "\" \\"
+    }
+    result += "\n-d registry.supertokens.io/supertokens/supertokens-mysql"
+  } else {
+    if (props.connectionUri !== "") {
+      result += "\n-e POSTGRESQL_CONNECTION_URI=\"" + props.connectionUri + "\" \\"
+    }
+    result += "\n-d registry.supertokens.io/supertokens/supertokens-postgresql"
+  }
+  return (
+    <div>
+      <Typography variant="h2" color="text.secondary" sx={{ mt: 2 }}>
+        Docker run command
+      </Typography>
+      <TextField
+        sx={{ width: 800 }}
+        disabled
+        multiline
+        variant="outlined"
+        minRows={3}
+        value={result}
+      />
+    </div>
+  )
 }
