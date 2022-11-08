@@ -39,7 +39,7 @@ function KeyValueUI(props: { fieldKey: string, value: string, onInputChange: (ke
                 onChange={(event) => {
                     props.onInputChange(event.target.value, props.value)
                 }}
-                value={props.fieldKey} placeholder="API_KEYS" style={{
+                value={props.fieldKey} placeholder="API_KEYS (Optional)" style={{
                     paddingLeft: "10px",
                     paddingRight: "10px",
                     marginRight: "10px",
