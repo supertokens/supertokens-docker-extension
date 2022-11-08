@@ -12,16 +12,17 @@ function useDockerDesktopClient() {
 }
 
 export function App() {
-  const [response, setResponse] = React.useState<string>();
+  const [dbSelected, setDbSelected] = React.useState<"postgresql" | "mysql" | undefined>(undefined);
+  const [connectionUri, setConnectionUri] = React.useState<string>("");
   const ddClient = useDockerDesktopClient();
 
-  const fetchAndDisplayResponse = async () => {
-    const result = await ddClient.docker.cli.exec("images", [
-      "--format",
-      '"{{ json . }}"',
-    ]);
-    setResponse(result.stdout.split("\n")[2]);
-  };
+  // const fetchAndDisplayResponse = async () => {
+  //   const result = await ddClient.docker.cli.exec("images", [
+  //     "--format",
+  //     '"{{ json . }}"',
+  //   ]);
+  //   setResponse(result.stdout.split("\n")[2]);
+  // };
 
   return (
     <>
@@ -31,14 +32,25 @@ export function App() {
       </Typography>
       <br />
       <label>
-        <input type="checkbox" />
+        <input type="checkbox" checked={dbSelected === "postgresql"} onClick={() => {
+          setDbSelected("postgresql")
+          setConnectionUri("")
+        }} />
         PostgreSQL
       </label>
       <br /><br />
       <label>
-        <input type="checkbox" />
+        <input type="checkbox" checked={dbSelected === "mysql"} onClick={() => {
+          setDbSelected("mysql")
+          setConnectionUri("")
+        }} />
         MySQL
       </label>
+      <br /><br />
+      {dbSelected && <DbConnectionURIInput
+        dbSelected={dbSelected}
+        input={connectionUri}
+        onInputChange={setConnectionUri} />}
       {/* <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
         Pressing the below button will trigger a request to the backend. Its
         response will appear in the textarea.
@@ -60,4 +72,36 @@ export function App() {
       </Stack> */}
     </>
   );
+}
+
+function DbConnectionURIInput(props: { dbSelected: "postgresql" | "mysql", input: string, onInputChange: (input: string) => void }) {
+  return (
+    <div>
+      <Typography variant="h3" color="text.secondary" sx={{ mt: 2 }}>
+        Please enter your {props.dbSelected === "postgresql" ? "PostgreSQL" : "MySQL"} database connection URI
+      </Typography>
+      <Typography style={{
+        width: "800px"
+      }} color="text.secondary" sx={{ mt: 2 }}>
+        SuperTokens will use this connection URI to connect to the database. Please make sure that you have already created a database for SuperTokens to write to.
+      </Typography>
+      <Typography style={{
+        width: "800px"
+      }} color="text.secondary" sx={{ mt: 2 }}>
+        If you don't provide one, then SuperTokens will run with an in memory database.
+      </Typography>
+      <input
+        value={props.input}
+        onChange={(event) => {
+          props.onInputChange(event.target.value)
+        }}
+        style={{
+          marginTop: "10px",
+          width: "400px",
+          height: "30px",
+          paddingLeft: "10px",
+          paddingRight: "10px"
+        }} placeholder={props.dbSelected === "mysql" ? "mysql://username:pass@host/dbName (Optional)" : "postgresql://username:pass@host/dbName (Optional)"} />
+    </div>
+  )
 }
