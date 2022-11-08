@@ -1,7 +1,6 @@
 import React from 'react';
-import Button from '@mui/material/Button';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
-import { Stack, TextField, Typography } from '@mui/material';
+import { TextField, Typography } from '@mui/material';
 import DbConnectionURIInput from "./DbConnectionURIInput";
 import OtherEnv from "./OtherEnv";
 
@@ -17,15 +16,66 @@ export function App() {
   const [dbSelected, setDbSelected] = React.useState<"postgresql" | "mysql" | undefined>(undefined);
   const [connectionUri, setConnectionUri] = React.useState<string>("");
   const [envVars, setEnvVars] = React.useState<{ key: string, value: string }[]>([{ key: "", value: "" }]);
+  const [stdResponse, setStdResponse] = React.useState<string>("");
+  const [errorResponse, setErrorResponse] = React.useState<string>("");
+
   const ddClient = useDockerDesktopClient();
 
-  // const fetchAndDisplayResponse = async () => {
-  //   const result = await ddClient.docker.cli.exec("images", [
-  //     "--format",
-  //     '"{{ json . }}"',
-  //   ]);
-  //   setResponse(result.stdout.split("\n")[2]);
-  // };
+  const startContainer = async () => {
+    setStdResponse("");
+    setErrorResponse("");
+    let currStdOutput = "";
+    let currErrorOutput = "";
+    let args = ["-p", "3567:3567", "-d"];
+
+    envVars.forEach(obj => {
+      if (obj.key === "" || obj.value === "") {
+        return;
+      }
+      args.push("-e");
+      args.push(obj.key + "=" + obj.value)
+    });
+
+    if (dbSelected === "mysql") {
+      if (connectionUri !== "") {
+        args.push("-e");
+        args.push("MYSQL_CONNECTION_URI=" + connectionUri)
+      }
+      args.push("registry.supertokens.io/supertokens/supertokens-mysql")
+    } else {
+      if (connectionUri !== "") {
+        args.push("-e");
+        args.push("POSTGRESQL_CONNECTION_URI=" + connectionUri)
+      }
+      args.push("registry.supertokens.io/supertokens/supertokens-postgresql")
+    }
+
+    await ddClient.docker.cli.exec("run", args, {
+      stream: {
+        onOutput(data) {
+          if (data.stdout) {
+            currStdOutput += data.stdout + "\n"
+            setStdResponse(currStdOutput);
+          } else {
+            currErrorOutput += data.stderr + "\n"
+            setErrorResponse(currErrorOutput);
+          }
+        },
+        onError(error) {
+          currErrorOutput += error + "\n"
+          setErrorResponse(currErrorOutput);
+        },
+        onClose(exitCode) {
+          if (exitCode === 0) {
+            return;
+          }
+          currErrorOutput += "Exited with status code: " + exitCode + "\n"
+          setErrorResponse(currErrorOutput);
+        },
+        splitOutputLines: true,
+      },
+    });
+  }
 
   return (
     <>
@@ -38,6 +88,8 @@ export function App() {
         <input type="checkbox" checked={dbSelected === "postgresql"} onClick={() => {
           setDbSelected("postgresql")
           setConnectionUri("")
+          setStdResponse("");
+          setErrorResponse("");
         }} />
         PostgreSQL
       </label>
@@ -46,6 +98,8 @@ export function App() {
         <input type="checkbox" checked={dbSelected === "mysql"} onClick={() => {
           setDbSelected("mysql")
           setConnectionUri("")
+          setStdResponse("");
+          setErrorResponse("");
         }} />
         MySQL
       </label>
@@ -76,25 +130,41 @@ export function App() {
         dbSelected={dbSelected}
         connectionUri={connectionUri}
         envVars={envVars} />}
-      {/* <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-        Pressing the below button will trigger a request to the backend. Its
-        response will appear in the textarea.
-      </Typography>
-      <Stack direction="row" alignItems="start" spacing={2} sx={{ mt: 4 }}>
-        <Button variant="contained" onClick={fetchAndDisplayResponse}>
-          Call backend
-        </Button>
-
+      <br />
+      {dbSelected && <button
+        onClick={startContainer}
+        style={{
+          height: "40px",
+          width: "250px",
+          borderRadius: "9px",
+          fontSize: "17px",
+          cursor: "pointer"
+        }}>
+        Start docker container
+      </button>}
+      <br /><br />
+      {dbSelected && <div>
         <TextField
-          label="Backend response"
-          sx={{ width: 480 }}
+          style={{
+            marginRight: "10px"
+          }}
+          sx={{ width: 350 }}
           disabled
           multiline
           variant="outlined"
           minRows={5}
-          value={response ?? ''}
+          value={stdResponse}
         />
-      </Stack> */}
+        <TextField
+          sx={{ width: 350 }}
+          disabled
+          multiline
+          variant="outlined"
+          minRows={5}
+          value={errorResponse}
+        />
+      </div>}
+      <br /><br /><br />
     </>
   );
 }
