@@ -2,6 +2,8 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
 import { Stack, TextField, Typography } from '@mui/material';
+import DbConnectionURIInput from "./DbConnectionURIInput";
+import OtherEnv from "./OtherEnv";
 
 // Note: This line relies on Docker Desktop's presence as a host application.
 // If you're running this React app in a browser, it won't work properly.
@@ -14,6 +16,7 @@ function useDockerDesktopClient() {
 export function App() {
   const [dbSelected, setDbSelected] = React.useState<"postgresql" | "mysql" | undefined>(undefined);
   const [connectionUri, setConnectionUri] = React.useState<string>("");
+  const [envVars, setEnvVars] = React.useState<{ [key: string]: string; }>({});
   const ddClient = useDockerDesktopClient();
 
   // const fetchAndDisplayResponse = async () => {
@@ -51,6 +54,10 @@ export function App() {
         dbSelected={dbSelected}
         input={connectionUri}
         onInputChange={setConnectionUri} />}
+      <br /><br />
+      {dbSelected && <OtherEnv
+        dbSelected={dbSelected}
+        input={envVars} />}
       {/* <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
         Pressing the below button will trigger a request to the backend. Its
         response will appear in the textarea.
@@ -72,36 +79,4 @@ export function App() {
       </Stack> */}
     </>
   );
-}
-
-function DbConnectionURIInput(props: { dbSelected: "postgresql" | "mysql", input: string, onInputChange: (input: string) => void }) {
-  return (
-    <div>
-      <Typography variant="h3" color="text.secondary" sx={{ mt: 2 }}>
-        Please enter your {props.dbSelected === "postgresql" ? "PostgreSQL" : "MySQL"} database connection URI
-      </Typography>
-      <Typography style={{
-        width: "800px"
-      }} color="text.secondary" sx={{ mt: 2 }}>
-        SuperTokens will use this connection URI to connect to the database. Please make sure that you have already created a database for SuperTokens to write to.
-      </Typography>
-      <Typography style={{
-        width: "800px"
-      }} color="text.secondary" sx={{ mt: 2 }}>
-        If you don't provide one, then SuperTokens will run with an in memory database.
-      </Typography>
-      <input
-        value={props.input}
-        onChange={(event) => {
-          props.onInputChange(event.target.value)
-        }}
-        style={{
-          marginTop: "10px",
-          width: "400px",
-          height: "30px",
-          paddingLeft: "10px",
-          paddingRight: "10px"
-        }} placeholder={props.dbSelected === "mysql" ? "mysql://username:pass@host/dbName (Optional)" : "postgresql://username:pass@host/dbName (Optional)"} />
-    </div>
-  )
 }
