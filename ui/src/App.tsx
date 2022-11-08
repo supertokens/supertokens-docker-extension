@@ -16,20 +16,30 @@ export function App() {
   const ddClient = useDockerDesktopClient();
 
   const fetchAndDisplayResponse = async () => {
-    const result = await ddClient.extension.vm?.service?.get('/hello');
-    setResponse(JSON.stringify(result));
+    const result = await ddClient.docker.cli.exec("images", [
+      "--format",
+      '"{{ json . }}"',
+    ]);
+    setResponse(result.stdout.split("\n")[2]);
   };
 
   return (
     <>
-      <Typography variant="h3">Docker extension demo</Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-        This is a basic page rendered with MUI, using Docker's theme. Read the
-        MUI documentation to learn more. Using MUI in a conventional way and
-        avoiding custom styling will help make sure your extension continues to
-        look great as Docker's theme evolves.
+      <Typography variant="h1">SuperTokens Docker extension</Typography>
+      <Typography variant="h3" color="text.secondary" sx={{ mt: 2 }}>
+        Select the database to use along with SuperTokens
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+      <br />
+      <label>
+        <input type="checkbox" />
+        PostgreSQL
+      </label>
+      <br /><br />
+      <label>
+        <input type="checkbox" />
+        MySQL
+      </label>
+      {/* <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
         Pressing the below button will trigger a request to the backend. Its
         response will appear in the textarea.
       </Typography>
@@ -47,7 +57,7 @@ export function App() {
           minRows={5}
           value={response ?? ''}
         />
-      </Stack>
+      </Stack> */}
     </>
   );
 }
