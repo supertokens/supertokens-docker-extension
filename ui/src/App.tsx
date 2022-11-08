@@ -16,7 +16,7 @@ function useDockerDesktopClient() {
 export function App() {
   const [dbSelected, setDbSelected] = React.useState<"postgresql" | "mysql" | undefined>(undefined);
   const [connectionUri, setConnectionUri] = React.useState<string>("");
-  const [envVars, setEnvVars] = React.useState<{ [key: string]: string; }>({});
+  const [envVars, setEnvVars] = React.useState<{ key: string, value: string }[]>([{ key: "", value: "" }]);
   const ddClient = useDockerDesktopClient();
 
   // const fetchAndDisplayResponse = async () => {
@@ -57,7 +57,20 @@ export function App() {
       <br /><br />
       {dbSelected && <OtherEnv
         dbSelected={dbSelected}
-        input={envVars} />}
+        input={envVars}
+        onInputChange={(index: number, key: string, value: string) => {
+          let newEnvVars = [...envVars]
+          newEnvVars[index] = {
+            key, value
+          }
+          setEnvVars(newEnvVars)
+        }}
+        addNewField={() => {
+          let newEnvVars = [...envVars, {
+            key: "", value: ""
+          }];
+          setEnvVars(newEnvVars)
+        }} />}
       {/* <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
         Pressing the below button will trigger a request to the backend. Its
         response will appear in the textarea.

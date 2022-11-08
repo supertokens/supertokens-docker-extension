@@ -2,7 +2,9 @@ import { Typography } from '@mui/material';
 
 export default function OtherEnv(props: {
     dbSelected: "postgresql" | "mysql",
-    input: { [key: string]: string; }
+    input: { key: string, value: string }[],
+    onInputChange: (index: number, key: string, value: string) => void,
+    addNewField: () => void
 }) {
     return (
         <div>
@@ -14,28 +16,45 @@ export default function OtherEnv(props: {
             }} color="text.secondary" sx={{ mt: 2 }}>
                 Please add other additional env variables to provide to SuperTokens. You can see a full list of them on {props.dbSelected === "mysql" ? "https://github.com/supertokens/supertokens-docker-mysql#configuration" : "https://github.com/supertokens/supertokens-docker-postgresql#configuration"}
             </Typography>
-            {Object.keys(props.input).map(key => {
-                let value = props.input[key];
-                return <KeyValueUI key={key} value={value} id={key} />
+            {props.input.map((obj, i) => {
+                if (obj.key === "" && obj.value === "" && i !== props.input.length - 1) {
+                    return null;
+                }
+                return <KeyValueUI onInputChange={(key: string, value: string) => {
+                    props.onInputChange(i, key, value);
+                }} fieldKey={obj.key} value={obj.value} key={i} />
             })}
-            <KeyValueUI key={""} value={""} id={"default"} />
-            {/* <input
-                value={props.input}
-                onChange={(event) => {
-                    props.onInputChange(event.target.value)
-                }}
-                style={{
-                    marginTop: "10px",
-                    width: "400px",
-                    height: "30px",
-                    paddingLeft: "10px",
-                    paddingRight: "10px"
-                }} placeholder={props.dbSelected === "mysql" ? "mysql://username:pass@host/dbName (Optional)" : "postgresql://username:pass@host/dbName (Optional)"} /> */}
+            <br />
+            <button onClick={props.addNewField}>Add new env var</button>
         </div>
     )
 }
 
-function KeyValueUI(props: { key: string, value: string, id: string }) {
-    // TODO:...
-    return null;
+function KeyValueUI(props: { fieldKey: string, value: string, onInputChange: (key: string, value: string) => void, }) {
+    return (
+        <div style={{
+            marginTop: "20px"
+        }}>
+            <input
+                onChange={(event) => {
+                    props.onInputChange(event.target.value, props.value)
+                }}
+                value={props.fieldKey} placeholder="API_KEYS" style={{
+                    paddingLeft: "10px",
+                    paddingRight: "10px",
+                    marginRight: "10px",
+                    height: "30px",
+                }} />
+            <input
+                onChange={(event) => {
+                    props.onInputChange(props.fieldKey, event.target.value)
+                }}
+                value={props.value} placeholder='AK7Ugig58908cbi3s....' style={{
+                    paddingLeft: "10px",
+                    paddingRight: "10px",
+                    marginLeft: "10px",
+                    height: "30px",
+                }} />
+        </div>
+    )
 }
