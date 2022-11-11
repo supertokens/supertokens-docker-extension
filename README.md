@@ -1,3 +1,10 @@
+![stars](https://img.shields.io/github/stars/supertokens/supertokens-docker-extension)
+![forks](https://img.shields.io/github/forks/supertokens/supertokens-docker-extension)
+![issues](https://img.shields.io/github/issues/supertokens/supertokens-docker-extension)
+![Visitor count](https://shields-io-visitor-counter.herokuapp.com/badge?page=supertokens.supertokens-docker-extension)
+![Twitter](https://img.shields.io/twitter/follow/supertokensio?style=social)
+
+
 # Supertokens Extension for Docker 
 
 
