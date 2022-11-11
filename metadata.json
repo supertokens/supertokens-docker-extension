@@ -8,7 +8,7 @@
   },
   "ui": {
     "dashboard-tab": {
-      "title": "Supertokens",
+      "title": "SuperTokens",
       "src": "index.html",
       "root": "ui",
       "backend": {
